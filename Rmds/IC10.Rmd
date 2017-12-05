@@ -1,0 +1,78 @@
+---
+title: "IC10, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## QUESTIONS
+
+Q1. The factorial of a non-negative integer n is defined to be 
+n!=n*(n-1)*(n-2)…*2*1,
+so for example, 4!=4*3*2*1=24.  Create a function that takes a non-negative integer as the argument and returns the factorial of the integer.  (Hint: you can use a while loop, but there are many ways to do this).  What is the value of 10! ? 
+
+```{r}
+factorialint <- function(n){
+  f=1;
+  for (i in 1:n){
+    f=f*i
+  }
+  return(f)
+}
+```
+
+```{r}
+factorialint(5)
+5*4*3*2*1
+
+factorialint(10)
+10*9*8*7*6*5*4*3*2*1
+
+```
+
+Q2. The formula for converting a temperature in Fahrenheit (F) to Celsius (C) is:
+C=(5/9)*(F-32)
+Write a function that converts a Fahrenheit temperature to Celsius. Use this function to create a data frame containing Fahrenheit values 30, 31, 32, up to 100, and the corresponding temperatures in Celsius.
+
+```{r}
+FtoC <- function(F){
+  C=(5/9)*(F-32)
+  return(C)
+}
+```
+
+```{r}
+FtoC(32)
+FtoC(95)
+FtoC(65)
+```
+
+Q3. Obtain a root for the following function with the Newton-Raphson method:
+f(x)=5x^3-4x^2+12x – 7
+(Hint: Implement the Newton-Raphson function given in the session 10 slides).
+```{r}
+newton.raphson <- function(f,fprime,x0,thresh){
+  myabsdiff <- Inf
+  xold      <- x0
+  while(myabsdiff>thresh){ # have we converged yet? If no, move;
+    xnew      <- xold-f(xold)/(fprime(xold))
+    myabsdiff <- abs(xnew-xold)
+    xold      <- xnew
+    }
+  return(xnew)
+}
+
+
+```
+
+```{r}
+myf <- function(x){5*x^3+4*x^2+12*x-7}
+myfprime <- function(x){15*x^2 +8*x +12}
+r = newton.raphson(myf,myfprime,x0=0,thresh=0.0001)
+r
+myf(r)
+curve(myf,-10,10)
+```
+

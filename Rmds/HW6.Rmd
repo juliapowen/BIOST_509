@@ -1,0 +1,128 @@
+---
+title: "Homework #6 Owen 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Instructions
+Use R Markdown for this and all future Homework.  You can submit your R Markdown compiled document in a Word, pdf (if you have LaTeX installed on your computer), or html file to the course canvas page.  Your work will be graded as 1 (complete) if at least 70% of the questions are answered correctly (and/or an obvious “good faith” effort), or 0 (incomplete) otherwise.    For this and all homework assignments, make sure to include in your R Markdown document the R commands you used. 
+
+All questions for this homework relate to data on individual survival for passengers and crew aboard the Titanic. The file containing the data is “titaniclong.txt” and is available in the “files” folder within the Canvas course webpage.  It is also available on the web at:
+
+ http://faculty.washington.edu/tathornt/Biost509/DataSets/titaniclong.txt.
+
+
+##DESCRIPTION OF THE DATA 
+
+The data consist of survival data for 2201 passengers and crew aboard the RMS Titanic that sank in the North Atlantic Ocean in the early morning of 15 April 1912, after colliding with an iceberg during her maiden voyage from Southampton to New York City.   
+
+Variables names and description:
+
+Survived   Indicator of survival of subject (1=yes, 0=no)	
+Sex	 Subject sex (“Male” or “Female”) 
+Class	 Ticket class of subject (“1st”, ”2nd", “3rd", or “Crew”) 
+Age	 Stratified age group (“Child” or “Adult”) 
+
+##QUESTIONS 
+
+[Note: Make sure that any graphs for the questions below have an appropriate title as well as labels for the x and y axes.]
+
+#Q1.	
+Provide a stacked barplot illustrating the proportion of subjects who survived and died on the Titanic by sex. Similarly, provide stacked barplots illustrating the proportion of subjects who survived and died by ticket class group and by age group (child or adult). [Hint: See slide 3.10 from Lecture 3 on creating a stacked barplot]. 
+
+```{r}
+titanic <- read.table("~/Desktop/BIOST_509_2017/titaniclong.txt",header=TRUE)
+prob_sex=prop.table(table(titanic$Survived,titanic$Sex),2)
+par(mfrow=c(1,3))
+barplot(prob_sex,,col=c("red","green"),ylab="Proportion of Group",main="Survival Prop. by Sex")
+legend("topleft", inset=.05, c("Died","Survived"),fill=c("red","green"))
+prob_class=prop.table(table(titanic$Survived,titanic$Class),2)
+barplot(prob_class,,col=c("red","green"),ylab="Proportion of Group",main="Survival Prop. by Class")
+legend("topleft", inset=.05, c("Died","Survived"),fill=c("red","green"))
+prob_age=prop.table(table(titanic$Survived,titanic$Age),2)
+barplot(prob_age,,col=c("red","green"),ylab="Proportion of Group",main="Survival Prop. by Age")
+legend("topleft", inset=.05, c("Died","Survived"),fill=c("red","green"))
+
+```
+
+
+#Q2.	
+Provide a table with the probability of Titanic survival and the odds of Titanic survival by sex. Provide similar tables with the probability of Titanic survival and the odds of survival by ticket class group and the probability of survival and the odds of survival by age group.
+```{r}
+prop.table(table(titanic$Survived,titanic$Sex),2)
+odd_surv_f <- prob_sex[2,1]/prob_sex[1,1]
+odd_surv_m <- prob_sex[2,2]/prob_sex[1,2]
+print(paste0("Odds of survival if Female ",format(odd_surv_f, nsmall = 2)," to ",format(1, nsmall = 2)))
+print(paste0("Odds of survival if Male ",format(odd_surv_m, nsmall = 2)," to ",format(1, nsmall = 2)))
+
+prop.table(table(titanic$Survived,titanic$Class),2)
+odd_surv_1 <- prob_class[2,1]/prob_class[1,1]
+odd_surv_2 <- prob_class[2,2]/prob_class[1,2]
+odd_surv_3 <- prob_class[2,3]/prob_class[1,3]
+odd_surv_4 <- prob_class[2,4]/prob_class[1,4]
+print(paste0("Odds of survival if 1st Class ",format(odd_surv_1, nsmall = 2)," to ",format(1, nsmall = 2)))
+print(paste0("Odds of survival if 2nd Class ",format(odd_surv_2, nsmall = 2)," to ",format(1, nsmall = 2)))
+print(paste0("Odds of survival if 3rd Class ",format(odd_surv_3, nsmall = 2)," to ",format(1, nsmall = 2)))
+print(paste0("Odds of survival if Crew ",format(odd_surv_4, nsmall = 2)," to ",format(1, nsmall = 2)))
+
+prop.table(table(titanic$Survived,titanic$Age),2)
+odd_surv_a <- prob_age[2,1]/prob_age[1,1]
+odd_surv_c <- prob_age[2,2]/prob_age[1,2]
+print(paste0("Odds of survival if Adult ",format(odd_surv_a, nsmall = 2)," to ",format(1, nsmall = 2)))
+print(paste0("Odds of survival if Child ",format(odd_surv_c, nsmall = 2)," to ",format(1, nsmall = 2)))
+
+```
+
+#Q3.	
+Perform a logistic regression analysis in R with Titanic survival as the response and sex as the predictor.  Calculate an odds ratio of survival for males versus females. Provide a 95% confidence interval for the odds ratio.  Is there evidence that survival on the Titanic is significantly different for females as compared to males?  Provide evidence to support your conclusion.
+
+```{r}
+titanic$sexfac <- as.factor(with(titanic,ifelse(Sex=="Male",1,0)))
+glm1 <- glm(Survived ~ sexfac, data=titanic, family=binomial)
+summary(glm1)
+oddsratio_maletofemale <- exp(glm1$coefficients[2])
+print(paste0("The odds ratio for males to females is ",format(round(oddsratio_maletofemale,3), nsmall = 2)))
+round(exp(confint.default(glm1, "sexfac1", level=0.95)), 3)
+```
+Yes, the odds ratio is very much in the favor of the females surviving (the ratio is much smaller than 1), males have (0.099-1)*100=-90.1% lower odds of survival, with a p<2e-16 and 95% confidence interal that does not include 1.
+
+#Q4.	
+Perform a logistic regression analysis in R with survival on the Titanic as the response and the age group variable (child or adult) as the predictor.  Calculate an odds ratio of Titanic survival for children versus adults. Provide a 95% confidence interval for the odds ratio.  Is there evidence that odds of survival on the Titanic was significantly different for children as compared to adults?  Provide evidence to support your conclusion.
+
+```{r}
+titanic$agefac <- as.factor(with(titanic,ifelse(Age=="Child",1,0)))
+glm2 <- glm(Survived ~ agefac, data=titanic, family=binomial)
+summary(glm2)
+oddsratio_childtoadult <- exp(glm2$coefficients[2])
+print(paste0("The odds ratio for child to adult is ",format(round(oddsratio_childtoadult,3), nsmall = 2)))
+round(exp(confint.default(glm2, "agefac1", level=0.95)), 3)
+```
+Yes, the odds ratio is very much in the favor of the children surviving (the ratio is much greater than 1), children have (2.41-1)*100=141% higher odds of survival with a p<8e-6 and 95% confidence interal that does not include 1.
+
+#Q5.	
+Now implement a logistic regression analysis with Titanic survival as the response and ticket class as the predictor.  Calculate odds ratios and corresponding 95% confidence intervals comparing odds of survival for 2nd class, 3rd class and crew to 1st class survival, i.e., 1st class should be the reference group in the logistic regression analysis.  [Note: One can change the reference group for a factor with the relevel() function in R, but for this question it should not be needed since “1st” class should be the default reference group in R for the class variable.]
+
+```{r}
+#titanic$agefac <- as.factor(with(titanic,ifelse(Age=="Child",1,0)))
+glm3 <- glm(Survived ~ Class, data=titanic, family=binomial)
+summary(glm3)
+oddsratio_first2second <- exp(glm3$coefficients[2])
+oddsratio_first2third <- exp(glm3$coefficients[3])
+oddsratio_first2crew <- exp(glm3$coefficients[4])
+print(paste0("The odds ratio for 2nd to 1st is ",format(round(oddsratio_first2second,3), nsmall = 2)))
+print(paste0("The odds ratio for 2rd to 1st is ",format(round(oddsratio_first2third,3), nsmall = 2)))
+print(paste0("The odds ratio for crew to 1st is ",format(round(oddsratio_first2crew,3), nsmall = 2)))
+```
+
+#Q6.	
+Conduct a multiple logistic regression analysis with Titanic survival as the response and with age, sex, and class as predictors. [Note: Include all three predictors in the logistic regression model.]  Compare the odds ratios and association results obtained from the (simple) logistic regression models for question 3, 4, and 5 to the odds ratios obtained from the multiple logistic regression model.  
+
+```{r}
+glm4 <- glm(Survived ~ Sex + Age + Class, data=titanic, family=binomial)
+summary(glm4)
+exp(glm4$coefficients)
+```
+Now we can see that even within 2nd class passangers to 1st class that have the same sex and age, there are (0.36-1)*100=-64% lower odds of survival, which is even lower than if you did not account for sex and gender in Q5.  The odds of suvival for 3rd class and crew versus 1st class are 83% and 58% lower respectively.  The odds for survival actually improve for the crew when accounting for age and gender, where as they are lower for the 3rd class when using the full model.

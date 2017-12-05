@@ -1,0 +1,73 @@
+---
+title: "HW3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+1.	FEV is the primary outcome of interest in this study.  Provide a scatterplot illustrating how FEV changes with age. Comment on the relationship between the two variables.
+
+```{r}
+fev <- read.csv("~/Desktop/BIOST_509_2017/fev2.csv")
+plot(x=fev$age,fev$fev,xlab="age (years)",ylab="FEV (L/s)",main="Relationship between Age and FEV")
+```
+
+In general, FEV increases with age up to about 11 years and then plateaus.
+
+Now provide a scatterplot illustrating the relationship between FEV and age, but with female subjects having a different color than males in the plot. 
+
+```{r}
+plot(x=fev$age,fev$fev,xlab="age (years)",ylab="FEV (L/s)",main="Relationship between Age and FEV",col=ifelse(fev$sex==1,"blue","pink"),,pch=19,cex=1.1)
+legend(3,5, c("male", "female"),fill=c("blue","pink"),col=c("blue","pink"))
+```
+
+3.	Provide boxplots of FEV by smoking habits.  Briefly describe any differences in the distribution of FEV for smokers and non-smokers. 
+
+```{r}
+boxplot(fev~smoke, data=fev, names=c("Smokers","NonSmokers"),ylab="FEV (L/s)",main="FEV for Smokers vs. NonSmokers")
+```
+
+Surprisingly, children who smoke have a higher median FEV than children that do not.  I suspect that this is confounded by age since we already know that older children have higher FEVs, and my guess is that older children tend to smoke.
+
+4.	Create an age grouping variable based on 4 or 5 year intervals, e.g., age group 1 could correspond to children with ages ranging from 1 to 5, group 2 corresponds to ages from 6 to 10, etc. Provide a figure showing the proportion of smokers and non-smokers by age group. 
+
+```{r}
+fev$agebrackets <- cut(fev$age,4)
+count_smoke <- table(fev$smoke,fev$agebrackets)
+agebrackets_count <- table(fev$agebrackets)
+count_smoke[1,] <- 100*count_smoke[1,]/agebrackets_count
+count_smoke[2,] <- 100*count_smoke[2,]/agebrackets_count
+barplot(count_smoke,main="Proportion of Smokers in Age Brackets",
+  xlab="Age Brackets (years)", ylab="%",col=c("darkblue","red"))
+legend(1,90,c("smokers","nonsmokers"),fill=c("darkblue","red"))
+```
+
+5.	 Using the same age groupings from question 4, illustrate the distribution of FEV by age group with boxplots. Briefly describe how the distribution of FEV changes across the age groups.
+
+```{r}
+boxplot(fev~agebrackets,data=fev,xlab="age brackets (years)",ylab="FEV (L/s)",main="Change in FEV with Age")
+```
+
+As expected, FEV increases with age as seen in (1).
+
+6.	Using the same age groupings from question 4, create boxplots illustrating the distribution of FEV by smoking habits for each age group, but only include age groups that have both smokers and non-smokers. Briefly describe any similarities or differences in the FEV distribution between smokers and non-smokers for each age group.
+
+```{r}
+ind <- fev$agebrackets!="(2.98,7]"
+fev_2 <- data.frame(factor(fev$agebrackets[ind]),fev$smoke[ind],fev$fev[ind])
+colnames(fev_2) <- c("agebrackets","smoke","fev")
+boxplot(fev~interaction(smoke,agebrackets),data=fev_2,varwidth=TRUE,
+        main="Interaction of Age and Smoking Habits with FEV",xlab="Smoking/Age Groups",ylab="FEV (L/s)")
+```
+The 7-11 range shows that smokers have higher FEV, but this is based on relatively few samples and we see higher FEV for nonsmokers in the other two age ranges.
+
+7.	Create a single figure containing scatterplots of FEV versus height for different age groupings (or subranges). [Hint:  Use the coplot function discussed in the lecture 3 notes]. 
+
+```{r}
+coplot(fev~height | agebrackets, data=fev, rows=1,columns = 4)
+```
+

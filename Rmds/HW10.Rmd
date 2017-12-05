@@ -1,0 +1,100 @@
+---
+title: "HW10, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#All questions for this homework relate to the FEV data set from an observational study of FEV and smoking in children that was used in Homework Assignment 3. The file containing the data is “fev2.csv” and is available in the “files” folder within the Canvas course webpage.  It is also available on the web at: 
+
+http://faculty.washington.edu/tathornt/Biost509/DataSets/fev2.csv
+
+
+
+#QUESTIONS 
+
+
+1.	Create an R function which takes as input parameter a sample of data for a variable and computes and displays the mean, SD, SE, and a 95% CI for the mean. Use the usual formulas for the SE (SD divided by square root of sample size) and 95% CI (mean +/- 1.96*SE).
+
+```{r}
+summarizedata <- function(datainput){
+ data_mean=mean(datainput)
+ data_sd=sd(datainput)
+ data_se=data_sd/length(datainput)
+ data_upci=data_mean+(1.96*data_se)
+ data_lowci=data_mean-(1.96*data_se)
+ print(paste("Mean:",data_mean))
+ print(paste("SD:",data_sd))
+ print(paste("SE:", data_se))
+ print(paste("95% CI:[",data_lowci,",",data_upci,"]"))
+  }
+```
+
+
+2.	 Use your function to compute the mean, SD, SE and 95% CI for the mean FEV for the entire sample.
+
+```{r}
+fev <- read.csv("~/Desktop/BIOST_509_2017/fev2.csv")
+summarizedata(fev$fev)
+```
+
+3.	 Create an R function that takes as input parameters a sample of data for a variable and a corresponding group variable.  Assume the group variable takes the values 0 or 1. Your function should calculate and display the mean, SD, SE, and 95% CI for the mean for each of the two groups defined by the group variable.  The results can be displayed in any format you choose.
+
+```{r}
+summarizedata_group <- function(datainput,datagroup,namegroups){
+  groups = sort(unique(fev$smoke))
+  for (i in groups){
+      print(paste("Data summary for",namegroups[i],":"))
+      summarizedata(datainput[datagroup==i])
+  }
+}
+  
+```
+
+
+4.	Use the function from the previous question to compute and display the mean, SD, SE, and 95% CI of the mean FEV for smokers and non-smokers.
+
+```{r}
+namegroups=c("smokers","nonsmokers")
+summarizedata_group(fev$fev,fev$smoke,namegroups)
+```
+
+
+5.	 Create an age-group variable which divides the sample into kids whose age is larger than the mean age and kids whose age is smaller than or equal to the mean age. Use this group variable and your function from Q3 to compute and display the mean, SD, SE, and 95% CI of the mean FEV for the two groups of kids defined by the age-group variable. 
+
+```{r}
+mean_age=mean(fev$age)
+namegroups=c("young kids","old kids")
+datagroup=ifelse(fev$age<=mean_age,1,2)
+summarizedata_group(fev$age,datagroup,namegroups)
+```
+
+
+6.	Conduct a linear regression analysis with FEV as the response and smoking status (smoker or non-smoker) as the predictor.  Provide a summary table of the results.  Describe the association between FEV and smoking based on the regression model.  Is the association significant?  Provide evidence to support your conclusion
+
+```{r}
+lm1 = lm(fev~smoke, fev)
+summary(lm1)
+```
+Yes, there is a significant (p<1.99e-10) association between smoking status and higher FEV, the smokers have on average a higher FEV by 0.7 units (which we knew from #4 above).  But obviously this is puzzling.
+
+7.	Now conduct a multiple linear regression analysis with FEV as the response and both smoking status and age included as predictors.   Provide a summary table of the results.  Describe the association between FEV and smoking after adjusting for age. Is the association significant?  Provide a summary table of the results.   Also, compare the association results for FEV and smoking after adjusting for age to the association results from question 6. Provide an explanation for any differences in the FEV-smoking association results from the two regression models.
+
+```{r}
+lm1 = lm(fev~age+smoke, fev)
+summary(lm1)
+```
+There is still a significant association between smoking status and FEV after controlling for age (p<0.00986), but now it is in the opposite (and expected) direction, smokers have a lower fev on average by 0.23 units.  This relationship is now as we expect because there is also a highly significant association of age and FEV (p<2e-16), which we knew from #5 above, and also because we can guess that smokers tend to be older. Without correcting for age, the relationship between smoking status and FEV is misleading. 
+
+8.	Using the ggplot package, create a scatterplot of FEV versus age, where the points are colored according to smoking status (smoker or non-smoker), and add smoothers to the plot for the two smoking status groups (smokers and non-smokers). [Hint:  use geom_smooth() with your ggplot command, as was used in Homework Assignment 9].   Make sure that your graph has an appropriate title as well as labels for the x and y axes. For ggplot, you can add a main title by including + ggtitle("New Plot Title”) to the plotting command.  Similarly, you can add customized X and Y axis labels with +xlab(“New X label”) and  +ylab(“New Y label”), respectively. See the ggplot cheat sheet for more information about labels.
+
+```{r}
+library("ggplot2")
+labelrace <- c("1" = "Mex. Am.", "2" = "Other His.","3" = "NonHis. White","4" = "NonHis. Black", "5" = "Other Race")
+fev$smokingstatus <- ifelse(fev$smoke==1,"Smoker","Nonsmoker")
+ggplot(fev, aes(x=age, y=fev, color=smokingstatus))+geom_point()+geom_smooth()+labs(title="Age by FEV",x ="Age", y = "FEV") 
+```
+
+

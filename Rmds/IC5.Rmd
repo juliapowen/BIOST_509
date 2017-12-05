@@ -1,0 +1,53 @@
+---
+title: "InClassEx5 Owen 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## IC#5
+
+1.	Perform a t-test for assessing significant differences in mean fev by sex.  What is the p-value for the t-test?  Is there a significant difference in mean fev by sex? Provide evidence to support your conclusion.
+
+```{r}
+fev <- read.csv("~/Desktop/BIOST_509_2017/fev2.csv")
+fev$sexfactor=as.factor(fev$sex)
+t.test(fev~sexfactor,data=fev)
+```
+The difference in mean FEV for the sexes is statistically significantly different at p<5.6e-8.
+
+2.	Now perform a linear regression analysis with fev as the response (dependent) variable and sex as the predictor (independent) variable.  Provide an interpretation of the coefficient for sex.  Provide a 95% confidence interval for the coefficient of sex.  Is there significant evidence that fev differs by sex? What is the value of R-squared for the model you fit. From the regression model, calculate the mean fev for females and the mean fev for males.  Compare your association results from the linear regression model to the t-test results you obtained in question 1.
+
+```{r}
+lm1 <- lm(fev~sexfactor,data=fev)
+summary(lm1)
+
+confint(lm1,parm="sexfactor2",level=0.95)
+```
+The coefficient for sex indicates that the mean FEV for the females is 0.3613 less than the mean for males. Yes, there is a siginficant difference in FEV between sexes at p<7.5e-8.  The confidence interval for the sex coef is [-0.491653,-0.2309002].  The R^2 value is 0.043.  The mean value of FEV when sex=0 (male) is 2.81 and the mean value of FEV when sex=1 (female) is 2.45, as found in 1.  When a t-test with equal variance assumption was used, the p-value was identical, therefore doing a linear regression is equivalent to a t-test under the equal variance assumption.
+
+3.	Now perform a linear regression analysis with fev as the response and height as the predictor. Describe the relationship between the two variables based on the output from your regression analysis.  Is there significant evidence of an association between fev and height?  Provide evidence to support your conclusion.
+
+```{r}
+lm1 <- lm(fev~height,data=fev)
+summary(lm1)
+```
+There is a statistically significant association between height and fev (p<2e-16), for every single unit (inch) of height increase, FEV increases by 0.132.
+
+4.	Provide a scatterplot of fev versus height and include in the plot the regression line for predicting fev from height.  
+
+```{r}
+plot(fev$height,fev$fev,xlab="height (in)",ylab="FEV",main="Association between height and FEV")
+abline(lm1,col="tomato",lty=2)
+```
+
+5.	Make a pairs plot of the variables fev, height, age and sex.  Conduct a multiple linear regression analysis with fev as the response and with height, age and sex included as predictors.  Print out the summary table of the results. Which predictors are significant in the model?  Provide the p-values for all three predictors.
+
+```{r}
+pairs(fev[,c("fev","height","age","sex")])
+lm2=lm(fev~height+age+sexfactor,data=fev)
+summary(lm2)
+```
+All three variables are significantly associated with FEV, height is significant at p<2e-16, then factoring in age is significant at p<2.96e-11, and sex is significant at p<1.45e-6.

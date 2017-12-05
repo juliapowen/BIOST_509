@@ -1,0 +1,73 @@
+---
+title: "Homework 9, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#All questions for this homework relate to two data sets from the NHANES National Youth Fitness Survey (NNYFS).  The NNYFS was performed with the National Health and Nutrition Examination survey (NHANES) to obtain information about physical activity and fitness levels in children in teens.   There is a dataset with demographic information is Y_DEMO.XPT and the dataset with body measures is Y_BMX.XPT.  Both files are XPORT data files.  The files are also available on the web at: http://faculty.washington.edu/tathornt/Biost509/DataSets/Y_DEMO.XPT and http://faculty.washington.edu/tathornt/Biost509/DataSets/Y_BMX.XPT
+
+
+##QUESTIONS 
+
+#Q1.	Briefly review the general information about NNYHS at https://www.cdc.gov/nchs/nnyfs/index.htm, the data documentation about the demographics data at  https://wwwn.cdc.gov/Nchs/Nnyfs/Y_DEMO.htm, and the data documentation about the body measures data  https://wwwn.cdc.gov/Nchs/Nnyfs/Y_BMX.htm.  
+
+#Q2.	Read in both data sets into R.   How many unique participants (variable name is SEQN) are in the demographics data set? How many unique participants (variable name is SEQN) are in the body measures data set?
+ [Hint: you can use the read.xport () function in the foreign package that comes with base R to read in the data sets.  For example, to read in Y_DEMO.XPT, load the foreign package in your R session and use a command such as: demo.data<- read.xport("Y_DEMO.XPT")  ]
+```{r}
+library("foreign")
+demo.data<- read.xport("Y_DEMO.XPT")
+bmx.data<- read.xport("Y_BMX.XPT")
+length(unique(demo.data$SEQN))
+length(unique(bmx.data$SEQN))
+```
+ 
+#Q3.	 Merge the two data sets using the merge()  function, keeping all the participants, even those who do not appear in both of the data sets. How many participants are in the merged data set? With this merged data set, what is the mean age of the participants at the time of screening (RIDAGER)?
+[Hint: see the notes for lecture 9 or use the help system in R for information about the merge function to find out how to specify the appropriate option for this.] 
+```{r}
+merged.data <- merge(bmx.data,demo.data,by="SEQN",all=TRUE)
+length(unique(merged.data$SEQN))
+mean(merged.data$RIDAGEYR)
+#tapply(X=merged.data$RIDAGEYR,INDEX=merged.data$SEQN,FUN=mean,na.rm=TRUE)
+```
+
+
+#Q4.	Now, merge the two data sets, excluding the participants who do not appear in both data sets.   How many participants are in this merged data set? With this merged data set, what is the mean age of the participants at the time of screening (RIDAGER).
+```{r}
+merged.data2 <- merge(bmx.data,demo.data,by="SEQN")
+length(unique(merged.data2$SEQN))
+mean(merged.data$RIDAGEYR)
+```
+
+#Q5.	Using the merged dataset from question 4 (which includes only participants in both datasets), use ggplot plot (from the ggplot2 package) to create boxplots of body mass index (BMXBMI) by race (RIDRETH1).  Make sure that the different race groups are appropriately labeled in the figure.
+
+```{r}
+library("ggplot2")
+merged.data2$RIDRETH1factor <- as.factor(merged.data2$RIDRETH1)
+ggplot(merged.data2, aes(x=RIDRETH1factor, y=BMXBMI, color=RIDRETH1factor))+geom_boxplot()+labs(title="BMI by Race",
+        x ="Race", y = "BMI")+ scale_x_discrete(labels=c("1" = "Mex. Am.", "2" = "Other His.",
+                              "3" = "NonHis. White","4" = "NonHis. Black", "5" = "Other Race")) + theme(legend.position="none")
+```
+
+
+#Q6.	Using the same merged dataset from question 4, conduct a multiple linear regression analysis with body mass index (BMXBMI) as the response and with arm circumference (BMXARMC), age (RIDAGER), and gender (RIAGENDR).   Provide a summary table of the results.    Describe the association between body mass index and arm circumference after adjusting for age and gender. Is the association significant?   Similarly describe the association between body mass index and gender after adjusting for arm circumference and age. Is the association significant?
+
+```{r}
+merged.data2$RIAGENDRfactor <- as.factor(merged.data2$RIAGENDR)
+lm1 <- lm(BMXBMI~RIDAGEYR+RIAGENDRfactor+BMXARMC,data=merged.data2)
+summary(lm1)
+```
+There is a signficant relationship between BMI and arm circumference after correcting for age and gender (p<2e-16), the coefficient associated with arm circumference is 1.08, indicating that an increase in 1 unit of BMI results in approximately a 1 cm increase in arm circumference.  There is not a signifcant association between gender and BMI after correcting for age and arm circumference (p<0.1).
+
+#Q7.	With the merged dataset from question 4, use ggplot to create scatterplots of body mass index (BMXBMI) versus arm circumference (BMXARMC) for each race group, where the points in each scatterplot are colored by gender.  Include smoothers in the scatterplots for the two gender groups. [Hint:  use geom_smooth() and facet_wrap()  with your ggplot command].
+
+```{r}
+labelrace <- c("1" = "Mex. Am.", "2" = "Other His.","3" = "NonHis. White","4" = "NonHis. Black", "5" = "Other Race")
+merged.data2$Gender <- ifelse(merged.data2$RIAGENDR==1,"male","female")
+merged.data2$RIDRETH1factor <- as.factor(merged.data2$RIDRETH1)
+ggplot(merged.data2, aes(x=BMXBMI, y=BMXARMC, color=Gender))+geom_point()+geom_smooth()+labs(title="BMI by Arm Circumference",
+        x ="BMI", y = "Arm Circ.",fill="Gender") + facet_grid(~RIDRETH1factor,labeller=labeller(RIDRETH1factor=labelrace))
+```
+

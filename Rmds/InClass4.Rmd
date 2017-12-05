@@ -1,0 +1,80 @@
+---
+title: "In Class Exercise #4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+1.	Create a figure with boxplots to illustrate the distribution of mpg (miles per gallon) for the different cyl (number of cylinder) types, where each boxplot in the figure has a different color.  Add a legend to the plot. 
+
+```{r}
+boxplot(mpg~cyl,data=mtcars,col=(c("yellow","purple","green")),xlab="number of cylinders",ylab="MPG",main="Realtionship between # Cylinders and MPG")
+legend("bottomleft", inset=.02, title="Number of Cylinders",
+   c("4","6","8"), fill=c("yellow","purple","green"), horiz=TRUE)
+```
+2.	Create a scatterplot to illustrate the relationship of mpg (miles per gallon) versus wt (car weight). 
+
+```{r}
+plot(mtcars$mpg,mtcars$wt,xlab="MPG",ylab="weight")
+```
+
+
+a.	Using abline(), add a straight line that you think summarizes this relationship. (Hint: experiment with a few straight lines, replotting the graph each time)
+
+```{r}
+plot(mtcars$mpg,mtcars$wt,xlab="MPG",ylab="weight")
+abline(5,-2/15)
+abline(10,-2/15)
+abline(6,-2/15)
+abline(5.75,-2/15,col="red")
+```
+
+
+b.	Add scatterplot smoothers to the plot using the lowess() and supsmu()functions, where one of the lines is red and the other is blue. (Hint: use the commands in the slides from session 4 on scatterplot smoothers!)
+c.	Use legend() to add an appropriate legend to the scatterplot. 
+```{r}
+plot(mtcars$mpg,mtcars$wt,xlab="MPG",ylab="weight")
+with(mtcars, lines(lowess(mpg, wt), col="red", lwd=2))
+with(mtcars, lines(supsmu(mpg, wt), col="blue", lwd=2))
+legend("bottomleft", inset=.02, title="Smoothing Method",
+   c("lowess","supsmu"), col=c("red","blue"), lty=1, horiz=TRUE,cex=0.75)
+```
+
+3.	Redo question 2 above but this time include the two scatterplot smoothers that have different line types and different colors, where one line is dotted and the other is dashed.  Include an appropriate legend. (Hint: for plotting different line types, use the lty option with the lines() function, e.g., set lty=2 in the function call in lines).  
+
+```{r}
+plot(mtcars$mpg,mtcars$wt,xlab="MPG",ylab="weight")
+with(mtcars, lines(lowess(mpg, wt), col="red", lwd=2,lty=3))
+with(mtcars, lines(supsmu(mpg, wt), col="blue", lwd=2,lty=5))
+legend("bottomleft", inset=.02, title="Smoothing Method",
+   c("lowess","supsmu"), col=c("red","blue"), lty=c(3,5), horiz=TRUE,cex=0.75)
+```
+4.	Put your results from Q1/2/3 into one figure, using layout().  Save this figure as a pdf file using command line functions, and upload this pdf file to Canvas along with your R Markdown in-class exercise solutions.  
+
+```{r}
+setwd("~/Desktop/BIOST_509_2017/")
+pdf("InClassPlot4.pdf")
+layout(matrix(c(1,2,3), 1,3, byrow = TRUE))
+
+boxplot(mpg~cyl,data=mtcars,col=(c("yellow","purple","green")),xlab="number of cylinders",ylab="MPG")
+legend("bottomleft", inset=.02, title="Number of Cylinders",
+   c("4","6","8"), fill=c("yellow","purple","green"), horiz=TRUE,cex=0.75)
+
+plot(mtcars$mpg,mtcars$wt,xlab="MPG",ylab="weight")
+with(mtcars, lines(lowess(mpg, wt), col="red", lwd=2))
+with(mtcars, lines(supsmu(mpg, wt), col="blue", lwd=2))
+legend("topright", inset=.02, title="Smoothing Method",
+   c("lowess","supsmu"), fill=c("red","blue"), horiz=TRUE,cex=0.75)
+
+plot(mtcars$mpg,mtcars$wt,xlab="MPG",ylab="weight")
+with(mtcars, lines(lowess(mpg, wt), col="red", lwd=2,lty=3))
+with(mtcars, lines(supsmu(mpg, wt), col="blue", lwd=2,lty=5))
+legend("topright", inset=.02, title="Smoothing Method",
+   c("lowess","supsmu"), col=c("red","blue"), lty=c(3,5), horiz=TRUE,cex=0.75)
+dev.off()
+```
+

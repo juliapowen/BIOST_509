@@ -1,0 +1,139 @@
+---
+title: "HW5 Owen 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## HW 5
+
+# Instructions
+
+Use R Markdown for this and all future Homework.  You can submit your R Markdown compiled document in a Word, pdf (if you have LaTeX installed on your computer), or html file to the course canvas page.  Your work will be graded as 1 (complete) if at least 70% of the questions are answered correctly (and/or an obvious “good faith” effort), or 0 (incomplete) otherwise.    For this and all homework assignments, make sure to include in your R Markdown document the R commands you used. 
+
+All questions for this homework relate to data from 59 patients in a randomized clinical trial of effectiveness of an anti-seizure medication.   The file containing the data is “seizure.txt”  and is available in the “files” folder within the Canvas course webpage.  It is also available on the web at:
+
+http://faculty.washington.edu/tathornt/Biost509/DataSets/seizure.txt.
+
+# DESCRIPTION OF THE DATA 
+
+The data are from a randomized clinical trial with 59 individuals on the effectiveness of an anti-seizure medication.  Prior to randomization, the 59 individuals were observed for 8 weeks and the number of seizures each patient had during this time was recorded.  After the initial 8-week observation period, patients were then randomized and assigned to either the active treatment arm (i.e., these individuals received the anti-seizure medication) or the placebo arm of the trial. Patients were followed for 16 weeks, and the number of seizures within each 4-week period after randomization was recorded.
+
+Variables names and description:
+
+* ID	patient id number
+* Y1	Number of seizures in first 4 week period after randomization
+* Y2	Number of seizures in second 4 week period after randomization
+* Y3	Number of seizures in third 4 week period after randomization
+* Y4	Number of seizures in fourth 4 week period after randomization
+* Trt	Indicator of treatment (1=active treatment, 0=placebo)
+* BL	Number of seizures in baseline 8-week period prior to randomization
+* Age	Patient age at randomization (years)
+
+# QUESTIONS 
+
+[Note: Make sure that any graphs made in R for the questions below have an appropriate title as well as informative labels for the x and y axes.]
+
+# Question 1. 
+
+How many individuals are in each of the two treatment groups?  What is the mean and standard deviation (SD) of the baseline seizure count for each of the two treatment groups? 
+
+```{r}
+seizure <-read.table("~/Desktop/BIOST_509_2017/seizure.txt", sep = '\t',header = TRUE)
+seizure$groupname=ifelse(seizure$Trt==0,"Placebo","Treatment")
+table(seizure$groupname)
+plac_m <- mean(seizure$BL[seizure$Trt==0])
+plac_s <- sd(seizure$BL[seizure$Trt==0])
+treat_m <- mean(seizure$BL[seizure$Trt==1])
+treat_s <- sd(seizure$BL[seizure$Trt==1])
+print(paste0("Mean at baseline, placebo group ",format(round(plac_m, 2), nsmall = 2),"+/-",format(round(plac_s, 2), nsmall = 2)))
+print(paste0("Mean at baseline, treatment group ",format(round(treat_m, 2), nsmall = 2),"+/-",format(round(treat_s, 2), nsmall = 2)))
+```
+
+# Question 2.
+
+Conduct a t-test comparing the mean baseline seizure count in the two treatment groups. (Note: this is actually a meaningless test because patients were randomly assigned to treatment groups and the baseline seizure count is a pre-randomization variable and so cannot be related to treatment by definition. But note that journals will sometimes ask that you perform such tests.) Is there a significant difference in mean baseline seizure count between the two groups?  Provide evidence to support your answer.
+
+```{r}
+t.test(seizure$BL[seizure$Trt==0],seizure$BL[seizure$Trt==1])
+```
+No, there is no statistically significant difference is baseline seizure count (p=0.91).
+
+# Question 3.
+
+Create a variable which represents the total number of seizures in the 16 weeks after randomization.  Provide the mean and SD of total seizure count for the entire sample, as well as for each treatment group separately.  Create histograms of the total number of seizures in the 16 weeks after randomization for each treatment group separately. Label the plots to distinguish the groups. Are the distributions symmetrical or skewed?
+
+```{r}
+w16 <- seizure$Y4
+print(paste0("Mean at 16 weeks, both groups ",format(round(mean(w16), 2), nsmall = 2),"+/-",format(round(sd(w16), 2), nsmall = 2)))
+print(paste0("Mean at 16 weeks, placebo group ",format(round(mean(w16[seizure$Trt==0]), 2), nsmall = 2),"+/-",format(round(sd(w16[seizure$Trt==0]), 2), nsmall = 2)))
+print(paste0("Mean at 16 weeks, treatment group ",format(round(mean(w16[seizure$Trt==1]), 2), nsmall = 2),"+/-",format(round(sd(w16[seizure$Trt==1]), 2), nsmall = 2)))
+par(mfrow=c(2,1))
+hist(w16[seizure$Trt==0],xlab="number of seizures",main="Number of seizures at 16 weeks, placebo group")
+hist(w16[seizure$Trt==1],xlab="number of seizures",main="Number of seizures at 16 weeks, treatment group")
+```
+
+The distribution is skewed towards fewer seizures, a large number of seizures is much more rare than few (0-10) seizures.
+
+# Question 4.
+
+Conduct a t-test for differences in the mean total seizure count in the 16 weeks after randomization for the two treatment groups, where equal variances for the two treatment groups is assumed.  Is there significant evidence that the anti-seizure medication is effective in significantly reducing the number of seizures of patients as compared to patients who received the placebo?  Provide evidence to support your answer.  
+
+```{r}
+t.test(w16[seizure$Trt==0],w16[seizure$Trt==1],var.equal = TRUE)
+```
+
+There is not evidence that the medication reduces the number of seizures at 16 weeks (p=0.62).
+
+# Question 5.
+
+Now conduct a t-test for differences in the mean total seizure count in the 16 weeks after randomization for the two treatment groups, where equal variances is not assumed for the two treatment groups.  Is there significant evidence that the anti-seizure medication is effective in significantly reducing the number of seizures of patients as compared to patients who received the placebo?  Provide evidence to support your answer.  Compare the results to the t-test conducted in question 4.  
+
+```{r}
+t.test(w16[seizure$Trt==0],w16[seizure$Trt==1],var.equal = FALSE)
+```
+There is still not evidence that the medication reduces the number of seizures at 16 weeks (p=0.62).  The p-values under both assumptions are almost identical.
+
+# Question 6.
+
+Conduct a linear regression analysis with total seizure count in the 16 weeks after randomization as the response and treatment group as the predictor.   Calculate the mean total seizure count in the 16 weeks after randomization for each treatment group from the linear regression model.   Is there significant evidence that total seizure count differs by treatment group, i.e., there is a difference between active-treatment and placebo?   How do the results from the regression analysis compare to the results of the t-tests for the total seizure count that you did for questions 4 and 5 above?
+
+```{r}
+lm1 <- lm(Y4~Trt,data=seizure)
+summary(lm1)
+```
+The mean of the placebo group is 7.964 (B0) and the mean of the treatment group is 7.964-1.255=6.709 (B0+B1).  No, there is no significant difference (p=0.622), this test is equilavent to the t-test with equal variance.
+
+# Question 7. 
+
+Add the baseline seizure count (variable “BL”) as an explanatory variable to the regression model used for the previous question. Compare the values for the coefficient of the treatment variable, its SE and its statistical significance from this analysis compared to the analysis for the previous question.
+
+```{r}
+lm3 <- lm(Y4~BL+Trt,data=seizure)
+summary(lm3)
+```
+Now we see that baseline seizure count is highly associated with seizure count at 16 weeks (p<2e-16) and that when baseline seizure count is accounted for in the regression, the effect of the treatment is more evident.  While still not statisically significant at p=0.292, it is close to significant and the coefficeint has a greater magnitude, meaning that for any subject that have the same baseline seizure count the medication reduces the seizure count on average 1.5 seizures.  And now the standard error is lower, indicating that accounting for baseline seizures removed some of the variance in the model.
+
+# Question 8.
+
+Now perform a linear regression analysis with total seizure count in the 16 weeks after randomization as the response and baseline seizure count as a single predictor (or explanatory variable).  Describe the relationship between the two variables based on the output from your regression analysis.  What is the of R-squared value for the model that you fit?  Is there significant evidence of an association between total seizure count after randomization and baseline seizure count?  Provide evidence to support your conclusion.
+
+```{r}
+lm4 <- lm(Y4~BL,data=seizure)
+summary(lm4)
+```
+The R^2 value suggests that there is a fair amount of correlation (R^2=0.71) between the baseline seizure rate and the seizure rate at 16 weeks with p<2e-16, and a change in one baseline seizure translates to 0.3 change in seizures at 16 weeks p<2e-16.
+
+# Question 9. 
+
+Provide a scatterplot of total seizure count in the 16 weeks after randomization versus baseline seizure count, where the color (and optionally plotting characters) of the points for the active-treatment group are different from the placebo group.  Make sure to include an appropriate legend.  Include in the plot the regression line obtained in the previous question, where the regression line is a different color than the colors of the points in the scatterplot. 
+
+```{r}
+plot(seizure$BL,seizure$Y4,xlab="baseline seizure count",ylab="16 week seizure count",main="Association between baseline and 16 week seizure count",col=ifelse(seizure$Trt==0,"black","red"),pch=ifelse(seizure$Trt==0,3,5))
+abline(lm4,col="green",lty=2)
+legend("topleft", inset=.02, title="Groups", c("placebo","treatment"),
+       col=c("black","red"), pch=c(3,5))
+```
+

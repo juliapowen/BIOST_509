@@ -1,0 +1,69 @@
+---
+title: "In Class 6, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## In Class Assignment 6
+
+#Instructions
+Use R Markdown for this In-Class Exercise.  You can submit your R Markdown compiled document in a Word, pdf (if you have LaTeX installed on your computer), or html file to the course canvas page by the end of the lab session today. Your work will be graded as 1 (complete) if at least 70% of the questions are answered correctly (and/or an obvious “good faith” effort), or 0 (incomplete) otherwise.   For this, and all in-class exercises, be sure to include the R commands that you used to obtain your answers, when applicable.  
+
+
+These exercises use the psa.txt dataset used in homework 2  
+
+#Q1
+Create an indicator variable for relapse within the first 24 months of hormone treatment [see question 4 from homework 2].  Perform a logistic regression analysis with relapse within 24 months as the response (dependent) and tumor grade as the predictor, where tumor grade is a categorical variable in your model. Is there any evidence of an association between relapse within 24 months and tumor grade? Provide evidence to support your conclusion. 
+```{r}
+psa<-read.table("~/Desktop/BIOST_509_2017/psa.txt",header=TRUE)
+#psa$rel_24 <- psa$obstime<24
+psa$rel_24 <- with(psa,ifelse(obstime<24 & inrem=="no",1,0))
+psa$gradefact <- as.factor(psa$grade)
+glm1 <- glm(rel_24 ~ gradefact, data=psa, family=binomial)
+summary(glm1)
+exp(glm1$coefficients)
+round(exp(confint.default(glm1, "gradefact2", level=0.95)), 3)
+round(exp(confint.default(glm1, "gradefact3", level=0.95)), 3)
+
+```
+No, there does not seem to be an significant association between grade and having a relapse prior to 24 months, the confidence intervals are large and include 1.
+
+#Q2
+Now perform a logistic regression analysis with relapse within the first 24 as the response and nadir psa as the predictor.  Calculate an odds ratio and confidence interval from the coefficient of the nadir psa level. Is there any evidence of an association between relapse within 24 months and nadir psa level? 
+```{r}
+glm2 <- glm(rel_24 ~ nadirpsa, data=psa, family=binomial)
+summary(glm2)
+exp(glm2$coefficients)
+round(exp(confint.default(glm2, "nadirpsa", level=0.95)), 3)
+```
+The estimated odds ratio is 1.04 for “psanadir” and the 95% confidence  interval  for  is  (0.995,1.091).  For two groups that differ in nadir psa by one unit, the odds of relapse is 4% higher.  There is some evidence for an association (p<0.08) between a higher nadir psa and an increased odds of a relapse in first 24 months and the confidence interval barely includes 1.
+
+#Q3
+Provide a histogram of nadir psa level and a histogram of log nadir psa levels, and make sure that the two histograms are in the same figure.
+
+```{r}
+par(mfrow=c(2,1))
+hist(psa$nadirpsa,xlab="nadir psa",main="Histogram of nadir psa")
+hist(log(psa$nadirpsa),xlab="log(nadir psa)",main="Histogram of log(nadir psa)")
+```
+
+#Q4
+Now perform a logistic regression analysis with relapse within the first 24 as the response and log nadir psa as the predictor.  Calculate an odds ratio and confidence interval from the coefficient of log nadir psa level. Is there any evidence of an association between relapse within 24 months and log nadir psa level? Provide evidence to support your conclusion.
+
+```{r}
+psa$lognadirpsa <- log(psa$nadirpsa)
+glm3 <- glm(rel_24 ~ lognadirpsa, data=psa, family=binomial)
+summary(glm3)
+exp(glm3$coefficients)
+round(exp(confint.default(glm3, "lognadirpsa", level=0.95)), 3)
+```
+
+Yes, there is a signficant relationship between increasing log nadir psa and relapse at 24 months (p<0.000219).
+
+#Q5
+Provide an interpretation of the odds ratio obtained in question 4.  
+
+Two groups that differ by one unit log nadir psa or is 2.718 times as large as the other, the 2.438-1=1.43 or 143.8% times larger odds ratio.  The 95% confidence interval suggests that the group with higher psa has an odds of relapse within 24 months anywhere from 52% to 291.2% higher than the group with lower psa.

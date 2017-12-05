@@ -1,0 +1,36 @@
+---
+title: "InClass Exercise 8, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## In Class Exercise #8
+
+#These exercises use the ggplot2 package that is a widely-used data visualization package for enhanced graphics in R.  You will use ggplot2 to to create figures with the salary dataset.  You will be using the salary dataset that has been used in previous homework and in-class exercises, and is available in the “files” folder within the Canvas course webpage.  It is also available on the web at:
+
+#http://faculty.washington.edu/tathornt/Biost509/DataSets/salary.txt.
+
+
+#Q1.	Using either the drop-down menus or the command line (with the install.packages() and library() commands) install the ggplot2 package and load it into your current R session.   
+
+```{r}
+library("ggplot2")
+```
+
+#Q2.	Using the ggplot()function, create boxplots of salary for each gender, where the color of the boxplots is different for each gender.
+
+```{r}
+salary <- read.table("~/Desktop/BIOST_509_2017/salary.txt",header=TRUE)
+ggplot(na.omit(salary), aes(x=gender, y=salary, fill=gender)) + 
+  geom_boxplot(notch=TRUE)
+```
+
+#Q3.	Using the ggplot() function, create histograms of salary for each rank, where the color of the histrogram is different for each rank.
+
+```{r}
+ggplot(na.omit(salary),aes(x=salary,fill=rank))+geom_histogram(binwidth=200)+facet_grid(~rank)+theme_bw()
+```
+

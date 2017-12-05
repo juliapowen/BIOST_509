@@ -1,0 +1,77 @@
+---
+title: "In Class #9, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#These exercises use the “french_fries.csv” dataset.  The dataset is available in the “files” folder within the Canvas course webpage.  It is also available on the web at:
+
+ http://faculty.washington.edu/tathornt/Biost509/DataSets/french_fries.csv
+
+
+#DESCRIPTION OF THE DATA 
+
+
+This data was collected from a sensory experiment conducted at Iowa State University in 2004. The investigators were interested in the effect of using three different fryer oils on the taste of French fries over time. There are three different types of frying oils (treatment), each in two different fryers (rep), tested by 12 people (subject) on 10 different days (time). The sensory attributes recorded, in order of desirability, are how potato-y, buttery, grassy, rancid, painty do they taste.   
+
+Variables names and description:
+time             Day of sensory experiment (1,2, …10)
+treatment    Type of frying oil (1, 2, or 3) 
+subject        Subject ID 
+rep              Replicate (1 or 2)
+potato         Score for potato-y
+buttery        Score for buttery
+grassy        Score for grassy
+rancid         Score for rancid
+painty         Score for painty
+
+##QUESTIONS 
+
+Note: Make sure that any graphs for the questions below have an appropriate title as well as labels for the x and y axes. For ggplot, can add a main title by including “ + ggtitle("New Plot Title”) to the plotting command.  Similarly, can add customized X and Y axis labels with “+xlab(“New X label”) and “+ylab(“New Y label”), respectively. See the ggplot cheat sheet for more information about labels.
+
+#Q1.	Sort the french fries data set in the following order of importance: treatment (primary), subject ID (secondary), and time (tertiary).  Provide the first few rows (at least 6) of your sorted data.  
+
+```{r}
+FF <- read.csv("~/Desktop/BIOST_509_2017/french_fries.csv",header=TRUE)
+FF.reordered <- FF[order(FF$treatment,FF$subject,FF$time),]
+head(FF.reordered)
+```
+
+
+#Q2.	For each treatment, calculate the mean and standard deviation for the “buttery” score.  Provide a table of the results.   [Hint: The functions presented in lecture 9 can be used to calculate the mean and standard deviation of the buttery score for each treatment group.  Also, can use data.frame() to create a table of the results.]
+
+```{r}
+mean.buttery.treatment <- tapply(X=FF$buttery,INDEX=FF$treatment,FUN=mean,na.rm=TRUE)
+sd.buttery.treatment <- tapply(X=FF$buttery,INDEX=FF$treatment,FUN=sd,na.rm=TRUE)
+buttery.treatment <-data.frame(cbind(mean.buttery.treatment,sd.buttery.treatment))
+buttery.treatment
+```
+
+
+#Q3.	Calculate the median “rancid” rating for each individual on the 5th day.  Provide the median values for the subjects.  Provide a histogram of the median values.  [Note: ggplot requires a dataframe to produce a plot.  You will need to create a dataframe of your results before use ggplot.]
+
+```{r}
+library("ggplot2")
+rancid.fifthday <- subset(FF,time==5)
+median.rancid.fifthday <- tapply(X=rancid.fifthday$rancid,INDEX=rancid.fifthday$subject,FUN=median,na.rm=TRUE)
+median.rancid.fifthday <- data.frame(median.rancid.fifthday)
+median.rancid.fifthday
+ggplot(data=median.rancid.fifthday, aes(median.rancid.fifthday)) + geom_histogram(bins=5) + xlab("median rancid score on 5th day") + ggtitle("median rancid score on 5th day across subjects")
+```
+
+
+#Q4.	For each treatment, provide scatterplots of the rancid ratings across time for the first replicate, where the points in each of the scatterplots are connected by a line for each subject. [Hint:  See question 4 in Homework 8 for regarding connecting lines in a scatterplot by some factor variable of interest with ggplot. Also, can use the facet_wrap()  or facet_grid() options in ggplot to get multiple scatterplots by group.]
+
+   
+```{r}
+FF.firstreplicate <- subset(FF,rep==1)
+ggplot(FF.firstreplicate, aes(x=time, y=rancid, group=subject,color=subject)) + 
+  geom_point() +geom_line(linetype=2) +facet_grid(~treatment)
+```
+
+
+
+

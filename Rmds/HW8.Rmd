@@ -1,0 +1,77 @@
+---
+title: "Homework 8, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##All questions for this homework relate to autism data from a prospective longitudinal study of children ages of 2 and 13 who were diagnosed with either autism spectrum disorder or non-spectrum developmental delays at age 2.  The file containing the data is “autism.csv” and is available in the “files” folder within the Canvas course webpage.  It is also available on the web at: 
+
+http://faculty.washington.edu/tathornt/Biost509/DataSets/autism.csv
+
+DESCRIPTION OF THE DATA 
+The data is from a prospective longitudinal study following 214 children between the ages of 2 and 13 who were diagnosed with either autism spectrum disorder or non-spectrum developmental delays at age 2.  The data frame contains 604 observation for the 214 children.   Variables names and description are below:
+
+childid   	Child ID 
+sicdegp         Sequenced Inventory of Communication Development group (an assessment of expressive language development). There are three levels: “low”, “med”, or “high” 
+age2	Age (in years) centered around age 2 (age at diagnosis), e.g., an age2   value of 0 corresponds to an age of 2. 
+vsae	 	Vineland Socialization Age Equivalent (VSAE) score. 
+gender  	Gender of child (“male” or “female”)
+race   		Child's race (“white” or “nonwhite”). 
+bestest2  	Diagnosis at age 2 (“autism” or “pdd”, where “pdd” corresponds to 
+pervasive developmental disorder).
+
+##QUESTIONS 
+
+Note: All graphs/figures for this homework must be using tools from the R package ggplot2. 
+
+#Q1.	Create a scatterplot of Vineland Socialization Age Equivalent (VSAE) score versus age, where the points are colored according to diagnosis type at age 2, i.e., the bestest2 variable.
+
+```{r}
+library("ggplot2")
+autism <- read.csv("~/Desktop/BIOST_509_2017/autism.csv",header=TRUE)
+ggplot(na.omit(autism), aes(x=age2, y=vsae, color=bestest2)) + 
+  geom_point()
+```
+
+
+#Q2.	Create the same scatterplot as in question 1 but add smoothers for each age 2 diagnosis group [Hint:  use geom_smooth() with your ggplot command]
+
+```{r}
+ggplot(na.omit(autism), aes(x=age2, y=vsae, color=bestest2)) + 
+  geom_point() + geom_smooth(method='loess')
+```
+
+#Q3.	Create a figure containing boxplots of VSAE score by diagnosis type  for each of the age groups of  the age2 variable. [Hint: use facet_wrap() with your ggplot command] 
+
+```{r}
+ggplot(na.omit(autism), aes(x=bestest2, y=vsae, color=bestest2))+geom_boxplot()+facet_grid(~age2)
+
+```
+
+
+#Q4.	Create a scatterplot of VSAE score versus age, where the points are colored accorded to gender.  In the plot, connect with a line the points for each unique child across the different age values (age2). [Hint: include “group=childid” in your aes() ggplot command, and use both geom_point() and geom_line() ]  
+
+```{r}
+ggplot(na.omit(autism), aes(x=age2, y=vsae, group=childid,color=gender)) + 
+  geom_point() +geom_line(linetype=2)
+```
+
+
+#Q5.	Conduct a regression analysis with VSAE score at the age of diagnosis (at age 2, i.e., the variable age2 is 0) as the response and  diagnosis type (“autism” or “pdd”) as the predictor (or explanatory variable).  Provide a summary table of your regression analysis.  Is there significance evidence that mean VSAE score at age 2 differs by diagnosis type? Provide evidence to support your answer.  [ Hint:  First create a subset that includes only observations when a child is first diagnosed (at the age of 2).] 
+
+```{r}
+autsim_2 <- subset(autism,age2==0)
+lm1 <- lm(vsae~bestest2,data=autsim_2)
+summary(lm1)
+```
+Yes, the B1 coefficient of 3.23 with p<2e-7 denotes that the mean VSAE is 3.23 units higher in children with PDD as opposed to autism in children diagnosed at 2 years.
+
+#Q6.	Now conduct a multiple linear regression analysis with VSAE score at the age of diagnosis (at age 2) as the response and the two variables diagnosis type and gender as the predictors. Provide a summary table of your regression analysis.   From the regression analysis, is there significant evidence that mean VSAE score differs by gender at age 2 (the age of diagnosis) after adjusting for diagnosis type? Provide evidence to support your answer. 
+```{r}
+lm2 <- lm(vsae~bestest2+gender,data=autsim_2)
+summary(lm2)
+```
+No, there is not evidence that there is a difference between VSAE between genders after correcting for diagnosis (p=0.49).

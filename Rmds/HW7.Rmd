@@ -1,0 +1,85 @@
+---
+title: "HW7, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Homework #7
+#Instructions
+Use R Markdown for this and all future Homework.  You can submit your R Markdown compiled document in a Word, pdf (if you have LaTeX installed on your computer), or html file to the course canvas page.  Your work will be graded as 1 (complete) if at least 70% of the questions are answered correctly (and/or an obvious “good faith” effort), or 0 (incomplete) otherwise.    For this and all homework assignments, make sure to include in your R Markdown document the R commands you used. 
+
+All questions for this homework relate to a salary dataset used in in-class exercise 2 and homework 4, as well as is in previous lectures. Data were collected from 1976 - 1995 on non-medical faculty, and include monthly salary, sex, highest degree attained, year of highest degree, field, year hired, rank, and administrative duties. The dataset is available in the “files” folder within the Canvas course webpage.  It is also available on the web at:
+
+ http://faculty.washington.edu/tathornt/Biost509/DataSets/salary.txt.
+
+##QUESTIONS 
+
+
+#Q1.	Create a subset of the salary dataset with missing salary observations removed.  
+[Hint:  use the subset() function] 
+
+```{r}
+salary <- read.table("~/Desktop/BIOST_509_2017/salary.txt",header=TRUE)
+salary_narm <- subset(salary,!is.na(salary))
+```
+
+#Q2.	Use a for loop to obtain the following statistics for each UW faculty member: (1) the number of salary observations, (2) median salary, (3) minimum salary, (5) maximum salary
+
+```{r}
+indiv <- unique(salary_narm$id)
+statsbyid=matrix(0,length(indiv),5)
+n_id=0
+for(id in indiv){
+  n_id=n_id+1
+  tmp=salary_narm$salary[salary_narm$id==id]
+  statsbyid[n_id,1] <- length(tmp)
+  statsbyid[n_id,2] <- mean(tmp,na.rm =TRUE)
+  statsbyid[n_id,3] <- median(tmp,na.rm =TRUE)
+  statsbyid[n_id,4] <- min(tmp,na.rm =TRUE)
+  statsbyid[n_id,5] <- max(tmp,na.rm =TRUE)
+}
+statsbyid <- data.frame(statsbyid)
+rownames(statsbyid) <- indiv
+colnames(statsbyid) <- c("number","mean","median","min","max")
+head(statsbyid,10)
+```
+
+#Q3.	Which UW faculty member (or members) have the most salary observations?  What is the maximum number of salary observations for an individual?  Create a histogram illustrating the distribution of the number of salary observations per individual.  
+
+```{r}
+ID_maxobs <- row.names(statsbyid)[which(statsbyid$number == max(statsbyid$number))]
+ID_maxobs
+maxobs <- max(statsbyid$number)
+maxobs
+hist(statsbyid$number,xlab="number of salary observations",main="Histogram of Number of Salary Observations for Each Individual")
+```
+
+
+#Q4.	Create a histogram illustrating the distribution of the median salary for UW faculty.  What is the median of the median salaries of the UW faculty?
+
+```{r}
+hist(statsbyid$median,xlab="median salary",main="Histogram of Median Salary Observations for Each Individual")
+med_medsalary <- median(statsbyid$median)
+med_medsalary
+```
+
+
+#Q5.	Conduct a linear regression analysis where the median salary is the response and the difference between the maximum and minimum salary is the predictor.  Provide a summary table of the estimated coefficients from the linear regression analysis. Describe the relationship between the predictor and the response from the regression analysis.   Is there a significant association between median salary and the difference between the maximum and minimum salary?  Provide evidence to support your conclusion.   
+
+```{r}
+statsbyid$maxminusmin <- statsbyid$max - statsbyid$min
+lm <- lm(median~maxminusmin,data=statsbyid)
+summary(lm)
+```
+There is a small, but statistically significant (p<1e-5), slope from the linear model, indicating that there is some association between the max-min salary and median salary.  It may, however, not be very interesting. 
+
+#Q6.	Create a scatterplot of median salary versus the difference between the maximum and minimum salary, and add the regression line from question 5 to the plot. 
+
+```{r}
+plot(median~maxminusmin,data=statsbyid,xlab="maxsalary-minsalary",ylab="median salary",main="Relationship between MaxSalary-MinSalary and the Median Salary")
+abline(lm,col="tomato",lty=2)
+```
+

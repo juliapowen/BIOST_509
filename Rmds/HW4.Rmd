@@ -1,0 +1,65 @@
+---
+title: "HW#4 Owen 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+1.	Provide a figure with boxplots of salary for each rank, where each boxplot has a different color of your choice.   Also include an appropriate legend.  
+
+```{r}
+salary <- read.table("~/Desktop/BIOST_509_2017/salary.txt",header=TRUE)
+boxplot(salary~rank,data=salary,col=(c("yellow","purple","green")),xlab="Rank",ylab="Salary",main="Realtionship between Rank and Salary")
+legend("topleft", inset=.02, title="Rank", c("4","6","8"),
+       fill=c("yellow","purple","green"), horiz=TRUE)
+```
+
+
+2.	Provide a figure with boxplots of salary for each combination of rank and gender using the boxplot() function, where boxplots for males have the R “lightblue” color and  for females are have the R “pink” color for each rank. In the figure, boxplots for males and females of the same rank should be next to each other.   Also include an appropriate legend.  
+
+```{r}
+boxplot(salary~interaction(gender,rank),data=salary,col=(c("pink","lightblue","pink","lightblue","pink","lightblue")),xlab="Rank",ylab="Salary",main="Realtionship between Gender and Rank and Salary")
+legend("topleft", inset=.02, title="Gender", c("F","M"),
+       fill=c("pink","lightblue"), horiz=TRUE)
+```
+
+
+3.	 Now consider the subset of salaries for UW faculty members with id’s 6, 7,10, and 12.  Provide a scatterplot of salary versus year for these four individuals, where color and plotting character of the points in the scatterplot differ according to rank, i.e., salaries of Assistant, Associate, and Full Professor ranks have a different color and plotting character in the plot.  Include an appropriate legend for the plot.
+
+```{r}
+ind <- salary$id==6 | salary$id==7 | salary$id==10 | salary$id==12
+id <- salary[ind,]
+assoc=id$rank=="Assoc"
+full=id$rank=="Full"
+colorvec=rep("green",nrow(id))
+colorvec[assoc]="blue"
+colorvec[full]="purple"
+markervec=rep(1,nrow(id))
+markervec[assoc]=2
+markervec[full]=3
+plot(id$year,id$salary,col=colorvec,pch=markervec,xlab="Year",ylab="Salary")
+legend("topleft", inset=.02, title="Rank", c("Assist","Assoc","Full"),
+       col=c("green","blue","purple"), pch=c(1,2,3), horiz=TRUE)
+
+```
+
+
+
+4.	Now provide a scatterplot of salary versus year for UW faculty members with id’s 6,7,10, and 12, but use a different color for each id, and add lines connecting the points for each id. Make sure that the lines are the same color as the points they connect.  Include an appropriate legend that indicates the line color used for each id. 
+
+```{r}
+ind <- salary$id==6 | salary$id==7 | salary$id==10 | salary$id==12
+id <- salary[ind,]
+plot(id$year[id$id==6],id$salary[id$id==6],col="red",xlab="year",ylab="salary",xlim=c(min(id$year), max(id$year)), ylim=c(min(id$salary[!is.na(id$salary)]), max(id$salary[!is.na(id$salary)])),type="b")
+points(id$year[id$id==7],id$salary[id$id==7],col="orange",type="b")
+points(id$year[id$id==10],id$salary[id$id==10],col="green",type="b")
+points(id$year[id$id==12],id$salary[id$id==12],col="blue",type="b")
+legend("topleft", inset=.02, title="ID", c("6","7","10","12"),
+       col=c("red","orange","green","blue"), pch=1,lty=0, horiz=TRUE)
+
+```
+

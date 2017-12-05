@@ -1,0 +1,79 @@
+---
+title: "InClassAssign3"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Name: Owen
+
+Last 4 Digits of Student ID Number: 5714
+
+
+Introduction to R for Data Analysis in the Health Sciences
+ BIOST 509
+In-Class Exercise 3
+Due by 5:00 PM (after the end of class) on 10/11/2017
+
+ 
+Instructions
+Use R Markdown for this In-Class Exercise.  You can submit your R Markdown compiled document in a Word, pdf (if you have LaTeX installed on your computer), or html file to the course canvas page by the end of the lab session today. Your work will be graded as 1 (complete) if at least 70% of the questions are answered correctly (and/or an obvious “good faith” effort), or 0 (incomplete) otherwise.   For this in-class exercise, also include the R commands that you used to obtain your answers, when applicable.  
+
+
+1.	The crab.txt dataset will be used for this question.  The data are available from canvas or from web: http://faculty.washington.edu/tathornt/Biost509/DataSets/crab.txt:
+
+a.	Provide a plot of the number of satellites versus width
+
+```{r cars}
+crabs<-read.csv("~/Desktop/BIOST_509_2017/crab.txt",sep=" ")
+plot(x=crabs$n.satellites,y=crabs$width,xlab="num. sat.",ylab="width",main="plot of num. sat versus width")
+```
+b.	Provide a plot of the number of satellites versus weight, and color-code the points differently if their width exceeds 26cm
+
+```{r}
+is.gt26<-crabs$width>26
+plot(x=crabs$n.satellites,y=crabs$width,xlab="num. sat.",ylab="width",main="plot of num. sat versus width",col=ifelse(is.gt26,"red","green"))
+```
+c.	Illustrate the distributions of number of satellites, for crabs of different colors. (There are several ways to do this)
+
+```{r}
+plot(x=crabs$color,y=crabs$n.satellites,xlab="color",ylab="num. sat.",main="Box plot showing \n distribution of num. sat. for each color crab")
+```
+2.	The salary.txt dataset will be used for this question.  The data are available from canvas or from the web: http://faculty.washington.edu/tathornt/Biost509/DataSets/salary.txt; 
+
+a.	Provide boxplots of salary by gender.  Briefly describe any differences in the average or median distribution of salary by gender.
+
+```{r}
+salary<-read.csv("~/Desktop/BIOST_509_2017/salary.txt",sep=" ")
+plot(salary$gender,salary$salary,main="Box plot showing \n Salary Distribution by Gender")
+```
+
+It seems that females have a slightly lower median salary than men, but both distributions are skewed towards higher salaries than one would expect assuming normality.
+
+b.	Provide boxplots of salary by rank. Briefly describe any differences in the average or median distribution of salaries by rank.
+
+```{r}
+plot(salary$rank,salary$salary,main="Box plot showing \n Salary Distribution by Rank")
+```
+
+As expected, the median salary for Full Profs is highest, with Assoc. Profs also being slightly higher than Assist. Profs.
+
+c.	Now provide boxplots of salary for each combination of rank and gender using the boxplot() function.  [Hint:  Use the boxplot() function with the interaction() function  for rank and gender: boxplot(salary~interaction(gender,rank),data=salary) ].  Does it appear as if the average or median salary distribution is significantly different between males and females within each rank? Briefly explain.  
+
+```{r}
+boxplot(salary~interaction(gender,rank),data=salary,main="Box plot showing \n Salary Distribution by Rank and Gender")
+```
+
+I don't see a striking difference in pay between females and males across all the ranks.  :-)
+
+d.	Redo question, but use the varwidth option with the boxplot() function. [Hint: use the help function for boxplot to learn with the varwidth option does.]
+
+```{r}
+boxplot(salary~interaction(gender,rank),data=salary,varwidth=TRUE,main="Box plot showing \n Salary Distribution by Rank and Gender \n with box widths reflecing number of subjects")
+```
+
+Now we can see that the women are vastly under represented in the Full Profs. ranks, whereas there's a more even split between men and women at Assist. and Assoc.

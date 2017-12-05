@@ -1,0 +1,107 @@
+---
+title: "IC7, Owen, 5714"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## In Class Assignment 6
+#Instructions
+Use R Markdown for this In-Class Exercise.  You can submit your R Markdown compiled document in a Word, pdf (if you have LaTeX installed on your computer), or html file to the course canvas page by the end of the lab session today. Your work will be graded as 1 (complete) if at least 70% of the questions are answered correctly (and/or an obvious “good faith” effort), or 0 (incomplete) otherwise.   For this, and all in-class exercises, be sure to include the R commands that you used to obtain your answers, when applicable.  
+
+
+
+These exercises use the airquality dataset used in homework 1. 
+
+The airquality dataset is available on the course canvas site (airquality.csv within the datasets file folder), and on the web at http://faculty.washington.edu/tathornt/Biost509/DataSets/airquality.csv. 
+
+#Questions
+
+#Q1. Provide a figure with boxplots of ozone levels by month, where each boxplot is a different color.
+```{r}
+colorvec=c("red","orange","yellow","green","blue")
+airquality <- read.csv("~/Desktop/BIOST_509_2017/airquality.csv")
+boxplot(airquality$Ozone~airquality$Month,col=colorvec)
+```
+
+
+
+#Q2.	How many months are there in the airquality dataset? 
+[Hint:  use the unique() function as shown in lecture slide 7.10]
+```{r}
+n_months=unique(airquality$Month)
+n_months
+```
+
+#Q3.	Create a for loop to calculate the mean ozone for each month. Make sure to provide the R code for your for loop.   
+[Hint: in the for loop, you will need to get subsets of the data by month, as shown in lecture slide 7.11.  Make sure to initialize your mean ozone vector to be used in your for loop. There are some missing ozone values that will need to be accounted for when calculating the mean.]  
+```{r}
+meanoz_month=rep(0,length(n_months))
+n_m=0
+for(month in n_months){
+  n_m=n_m+1
+  meanoz_month[n_m] <- mean(airquality$Ozone[airquality$Month==month],na.rm =TRUE)
+}
+meanoz_month
+```
+
+#Q4.	Now create a for loop that obtains all of the following 5 ozone summary statistics for each month:  the number of ozone measurements, mean, median, minimum, and maximum. Make sure to provide your for loop R code.   
+[Note:  There are some missing ozone values that will need to be accounted for.]  
+```{r}
+statsoz_month=matrix(0,length(n_months),5)
+n_m=0
+for(month in n_months){
+  n_m=n_m+1
+  tmp=airquality$Ozone[airquality$Month==month];
+  statsoz_month[n_m,1] <- length(tmp[!is.na(tmp)])
+  statsoz_month[n_m,2] <- mean(tmp,na.rm =TRUE)
+  statsoz_month[n_m,3] <- median(tmp,na.rm =TRUE)
+  statsoz_month[n_m,4] <- min(tmp,na.rm =TRUE)
+  statsoz_month[n_m,5] <- max(tmp,na.rm =TRUE)
+}
+```
+
+#Q5.	Provide the summary statistics obtained from question 4 in a table and be sure to include your R code.  You can use data.frame() to display the table.   
+For example, mydata<-dataframe(var1,var2,var3) will create a data frame named mydata containing variables named var1, var2, and var3.
+```{r}
+statsoz_month <- data.frame(statsoz_month)
+rownames(statsoz_month) <- c(5:9)
+colnames(statsoz_month) <- c("number","mean","median","min","max")
+print(statsoz_month)
+```
+
+#Q6.	[Optional: for keen individuals!] Create a scatterplot of ozone versus solar radiation (Solar.R), i.e. ozone is on the y-axis and solar radiation is on the x-axis.  Using a for loop, add regression lines for each month to the scatterplot where ozone is the response (dependent) variable and temperature is the predictor (independent) in the regression models.  Each regression line in the plot should be a different color and line type.  Make sure to add an appropriate legend to the plot. 
+[Hint: for each subset dataframe obtained for each month in the loop, conduct a linear regression and add the regression line to the scatterplot using abline(). Use the col= and lty= options for abline() to change the color and line type, respectively.]
+```{r}
+ltvec=c(1,3,5,8,10)
+plot(Ozone~Solar.R, data=airquality,main="Solar Radiation versus Ozone",xlab="solar radiation",ylab="ozone")
+legend("topleft",title="Months",c("5","6","7","8","9"),fill=colorvec)
+n_m=0
+for(month in n_months){
+  n_m=n_m+1
+  lm <- lm(Ozone[airquality$Month==month]~Solar.R[airquality$Month==month], data=airquality)
+  abline(lm,col=colorvec[n_m],lty=ltvec[n_m])
+}
+```
+
+
+#Q7.	[Optional: for keen individuals!] Provide a table that includes, for each month, the slope coefficient, standard error for the slope, the p-value for the slope, and the R-squared for a regression model with ozone as the response (dependent) variable and temperature as the predictor (independent) variable. 
+[Hint: use the for loop above and include vectors to store these values from the regression output!]
+```{r}
+statslm_month=matrix(0,length(n_months),4)
+n_m=0
+for(month in n_months){
+    n_m=n_m+1
+    lm <- lm(Ozone[airquality$Month==month]~Temp[airquality$Month==month], data=airquality)
+    statslm_month[n_m,1]=summary(lm)$coefficients[2,1]
+    statslm_month[n_m,2]=summary(lm)$coefficients[2,2]
+    statslm_month[n_m,3]=summary(lm)$coefficients[2,4]
+    statslm_month[n_m,4]=summary(lm)$r.squared
+}
+statslm_month <- data.frame(statslm_month)
+rownames(statslm_month) <- c(5:9)
+colnames(statslm_month) <- c("slope coef","slope SE","slope p-val","R^2")
+print(statslm_month)
+```
